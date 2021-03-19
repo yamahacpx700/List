@@ -1,0 +1,230 @@
+#include <iostream>
+#include <ctime>
+
+using namespace std;
+
+struct Node {
+    int data;
+    Node* next;
+};
+
+class List {
+private:
+    Node* first;
+    unsigned int countNode;
+    const unsigned int nodeInList=10;
+    const unsigned int maxInNodeValue=100;
+public:
+    List ()
+    {first = nullptr; countNode=0;}
+
+    void listInit ();
+    void addNode (int d);
+    void displayList ();
+    void displayList (const string s);
+    void addNodeLast (int d);
+    void addNodeMiddle (int d, unsigned int n);
+    void deleteNode (unsigned int n);
+    void SortList ();  // Наивная сортировка пузырьком. Надо переписать. Для больших структур будет медленно. Надо переставлять указатели
+    void operator <<(List&);
+
+    ~List();
+};
+////////////////////////////////////
+List::~List(){
+    {while (first)
+        {
+        Node* buf = first;
+        first = first->next;
+        delete buf;
+       }
+        countNode=0;
+    }
+}
+///////////////////////////////////////
+void List::listInit()
+{
+    srand(time(0));
+    for (unsigned int i=0; i<nodeInList; i++)
+        addNode(1 + rand() % maxInNodeValue);
+}
+////////////////////////////////////
+void List::addNode(int d)
+{
+    Node* newNode = new Node;
+    newNode->data = d;
+    newNode->next = first;
+    first = newNode;
+    countNode++;
+}
+////////////////////////////////////
+void List::displayList()
+{
+    Node* current;
+    current = first;
+    while (current) {
+        cout<< current->data<< endl;
+        current = current->next;
+    }
+}
+//////////////////////////////////////////////////
+void List::displayList (const string s)
+{
+    string newS="-------------";
+    cout<<newS+s+newS<<endl;
+    displayList();
+    cout<<"           count node = "<<countNode<<endl;
+}
+
+/////////////////////////////////////////////////
+void List::addNodeLast(int d)
+{
+    Node* current;
+    Node* currentPrev;
+    current = first;
+    while (current) {
+        currentPrev = current;
+        current=current->next;
+    }
+    Node* newNode = new Node;
+    newNode->data = d;
+    newNode->next = nullptr;
+    currentPrev->next = newNode;
+    countNode++;
+}
+////////////////////////////////////////////////////////
+void List::addNodeMiddle (int d, unsigned int n)
+{
+    if(n<1|| n>countNode) cout<<"Illegal number of middle node"<<endl;
+    else
+    {
+        Node* current;
+        current = first;
+        unsigned int currentCount = 1;
+        while (currentCount < n-1) {
+            current = current->next;
+            currentCount++;
+        }
+        Node* newNode = new Node;
+        newNode->data = d;
+        newNode->next = current->next;
+        current->next = newNode;
+        countNode++;
+    }
+}
+////////////////////////////////////////////////////////
+void List::deleteNode (unsigned int n)
+{
+    if (n<1 || n>countNode) cout<< "Invalid node number"<<endl;
+    else {
+        if (n==1) {
+            Node* current;
+            current = first;
+            first = first->next;
+            delete current;
+            countNode--;
+        };
+        if (n>1 && n<countNode) {
+            Node* current;
+            current = first;
+            unsigned int currentCount=1;
+            while (currentCount < n-1){
+                current = current->next;
+                currentCount++;
+            }
+            Node* thisCurrent;
+            thisCurrent = current->next;
+            current->next = thisCurrent->next;
+            delete thisCurrent;
+            countNode--;
+        };
+        if (n==countNode) {
+            Node* current;
+            current = first;
+            unsigned int currentCount = 1;
+            while (currentCount < n-1) {
+                current = current->next;
+                currentCount++;
+            }
+            Node* lastNode;
+            lastNode = current->next;
+            current->next = nullptr;
+            delete lastNode;
+            countNode--;
+        }
+    }
+}
+////////////////////////////////////////////////////////
+void List::SortList () //Сортировка пузырьком. Надо переписать - переставляем только данные. Для больших структур будет медленно. Надо переставлять указатели
+{
+    Node* currentI;
+    currentI = first;
+    Node* currentJ;
+    currentJ = currentI->next;
+    for (unsigned int i=1; i<countNode; i++){
+        for (unsigned int j=i; j<countNode; j++){
+            if (currentI->data > currentJ->data)
+            {
+                int temp= currentI->data;//cout<<"temt="<<temp;
+                currentI->data = currentJ->data; //cout<<" currentI data="<<currentI->data;
+                currentJ->data = temp; //cout<<" currentJ data ="<<currentJ->data<<endl;
+            }
+           currentJ = currentJ->next;
+        }
+        currentI = currentI->next;
+        currentJ = currentI->next;
+    }
+}
+////////////////////////////////////////////////////////
+void List::operator<<(List& l2)
+{
+    Node* current;
+    current = first;
+    Node* currentPrev;
+    while (current) {
+        currentPrev = current;
+        current = current->next;
+    }
+    currentPrev->next = l2.first;
+    countNode+=l2.countNode;
+
+    l2.countNode = 0;
+    l2.first = 0;
+}
+////////////////////////////////////////////////////////
+
+int main()
+{
+    List l1;
+    l1.listInit();
+    l1.displayList();
+
+    l1.addNodeLast(777);
+    l1.displayList("add Node Last");
+
+    l1.addNodeMiddle(333, 2);
+    l1.displayList("add Node Middle");
+
+    l1.SortList();
+    l1.displayList("Sort List");
+
+    l1.deleteNode(1);
+    l1.displayList("delete Node");
+
+    l1.deleteNode(3);
+    l1.displayList("delete Node");
+
+    l1.deleteNode(4);
+    l1.displayList("delete Node");
+
+    List l2;
+    l2.listInit();
+    l2.displayList();
+    l1<<l2;
+    l1.displayList("l1<<l2");
+
+    l2.deleteNode(5);
+    l1.displayList();
+
+    return 0;
+}
